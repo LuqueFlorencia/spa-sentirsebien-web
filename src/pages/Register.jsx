@@ -120,30 +120,28 @@ const Register = () => {
         return
       }
       
-      try {
-        await register(transformFormData())
+      const result = await register(transformFormData())
+      if (result.success) {
         setRegistrationSuccess(true)
-        
         setTimeout(() => {
           navigate("/login")
         }, 3000)
-      } catch (error) {
-        setErrors({ submit: error.message })
+      } else {
+        setErrors({ submit: result.error })
       }
     }
   }
 
-  const handleProfessionalConfirm = async () => {
-    try {    
-      await register(transformFormData())
+  const handleProfessionalConfirm = async () => {    
+    const result = await register(transformFormData())
+    if (result.success) {
       setShowApprovalPopup(false)
       setRegistrationSuccess(true)
-      
       setTimeout(() => {
         navigate("/login")
       }, 3000)
-    } catch (error) {
-      setErrors({ submit: error.message })
+    } else {
+      setErrors({ submit: result.error })
       setShowApprovalPopup(false)
     }
   }
