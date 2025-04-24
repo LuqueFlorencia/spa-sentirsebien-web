@@ -33,14 +33,14 @@ const ClientDashboard = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
 
   useEffect(() => {
-    if (!isClient) {
+    if (!currentUser) {
       navigate("/login")
     }
-  }, [isClient, navigate])
+  }, [currentUser, navigate])
 
   const handleLogout = async () => {
     await logout()
-    await navigate("/")
+    window.location.href = "/";
   }
 
   useEffect(() => {

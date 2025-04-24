@@ -53,14 +53,14 @@ const ProfessionalDashboard = () => {
   })
 
   useEffect(() => {
-    if (!isProfessional) {
+    if (!currentUser) {
       navigate("/login")
     }
-  }, [isProfessional, navigate])
+  }, [currentUser, navigate])
 
   const handleLogout = async () => {
     await logout()
-    await navigate("/")
+    window.location.href = "/";
   }
 
   useEffect(() => {
