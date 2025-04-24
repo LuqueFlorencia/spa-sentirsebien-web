@@ -52,6 +52,13 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateCurrentUser = (updatedUserData) => {
+    setCurrentUser((prev) => ({
+      ...prev,
+      ...updatedUserData,
+    }));
+  };
+
   
   const logout = async () => {
     localStorage.removeItem("user");
@@ -64,6 +71,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     setCurrentUser,
+    updateCurrentUser,
     isLoggedIn: !!currentUser,
     isAdmin: currentUser?.userType === "admin",
     isProfessional: currentUser?.userType === "profesional",
