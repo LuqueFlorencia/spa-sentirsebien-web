@@ -38,6 +38,11 @@ const ClientDashboard = () => {
     }
   }, [isClient, navigate])
 
+  const handleLogout = async () => {
+    await logout()
+    await navigate("/")
+  }
+
   useEffect(() => {
     if (currentUser) {      
       getUserBookings();
@@ -63,12 +68,6 @@ const ClientDashboard = () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [notificationsRef])
-
-    // TODO: cuando clickeas se quedan en la pantalla de localhost:5173/login pero en blanco, cuando refrescas si carga bien
-  const handleLogout = () => {
-    logout()
-    navigate("/")
-  }
 
   const openDetailsModal = (booking) => {
     setSelectedBookingDetails(booking)

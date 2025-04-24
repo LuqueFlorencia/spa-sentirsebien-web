@@ -60,6 +60,11 @@ const AdminDashboard = () => {
     }
   }, [isAdmin, navigate])
 
+  const handleLogout = async () => {
+    await logout()
+    await navigate("/")
+  }
+
   useEffect(() => {
     if (currentUser) {      
       getUserBookings();
@@ -108,11 +113,6 @@ const AdminDashboard = () => {
     completed: bookings.filter((b) => b.status === "completado").length,
     cancelled: bookings.filter((b) => b.status === "cancelado").length,
     total: bookings.length,
-  }
-
-  const handleLogout = () => {
-    logout()
-    navigate("/")
   }
 
   const handleMessageStatusChange = (messageId, newStatus) => {

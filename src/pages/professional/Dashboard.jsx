@@ -58,6 +58,11 @@ const ProfessionalDashboard = () => {
     }
   }, [isProfessional, navigate])
 
+  const handleLogout = async () => {
+    await logout()
+    await navigate("/")
+  }
+
   useEffect(() => {
     if (currentUser) {      
       getUserBookings();
@@ -112,12 +117,6 @@ const ProfessionalDashboard = () => {
     .slice(0, 5)
 
   const pendingBookings = professionalBookings.filter((booking) => booking.status === "pendiente")
-
-    // TODO: cuando clickeas se quedan en la pantalla de localhost:5173/login pero en blanco, cuando refrescas si carga bien
-  const handleLogout = () => {
-    logout()
-    navigate("/")
-  }
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value)
