@@ -1,0 +1,155 @@
+/* Optional: Define a transition speed variable if needed */
+:root {
+  --transition-speed: 0.3s;
+}
+
+/* FAQ Section Container */
+.faq-section {
+  display: flex;
+  width: 100%;
+  height: 150vh;
+  background-color: var(--bg-color);
+  padding: 80px 20px;
+  align-items: center;
+}
+
+/* Container grid for FAQ and Contact CTA */
+.faq-container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr; /* Left for FAQ, right for contact */
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .faq-container {
+    grid-template-columns: 1fr; /* Stack columns on small screens */
+  }
+}
+
+/* LEFT COLUMN: FAQ */
+.faq-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-title {
+  font-family: "Playfair Display", serif;
+  font-size: var(--fs-l);
+  color: var(--accent-color);
+  margin-bottom: 0.5rem;
+}
+
+.faq-subtitle {
+  font-family: "Montserrat", sans-serif;
+  font-size: var(--fs-s);
+  color: var(--secondary-color);
+  margin-bottom: 2rem;
+}
+
+.faq-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--card-color);
+  padding: 1rem 0;
+}
+
+.faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--secondary-color);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-speed);
+}
+
+.faq-question:hover {
+  color: var(--accent-color);
+}
+
+.faq-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform var(--transition-speed);
+}
+
+.faq-icon.active {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-speed) ease-in-out;
+  font-family: "Montserrat", sans-serif;
+  color: var(--secondary-color);
+  font-size: var(--fs-xs);
+}
+
+.faq-answer.open {
+  max-height: 200px; /* Increase if needed */
+  margin-top: 0.5rem;
+}
+
+/* RIGHT COLUMN: Contact Link */
+.faq-right {
+  background-color: var(--card-color);
+  border-radius: var(--radius-m);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.contact-title {
+  font-family: "Playfair Display", serif;
+  font-size: var(--fs-m);
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+}
+
+.contact-description {
+  font-family: "Montserrat", sans-serif;
+  font-size: var(--fs-s);
+  color: var(--secondary-color);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.contact-button {
+  display: inline-block;
+  background-color: var(--accent-color);
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  font-size: var(--fs-s);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-m);
+  text-decoration: none;
+  transition: background-color var(--transition-speed);
+}
+
+.contact-button:hover {
+  background-color: var(--highlight-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .faq-right {
+    margin-top: 2rem;
+  }
+}
