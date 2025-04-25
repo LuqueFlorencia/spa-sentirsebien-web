@@ -111,6 +111,7 @@ input[type="tel"] {
 
 input[type="checkbox"] {
   width: 12%;
+  margin-right: 8px;
 }
 
 input:focus {
