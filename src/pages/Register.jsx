@@ -75,10 +75,6 @@ const Register = () => {
     }
 
     if (formData.userType === "profesional") {
-      // TODO: agregar logica para escribir especialidades, porque al momento no aparece nada, por eso comente la validacion
-      /*if (!formData.professionalInfo.specialties.length) {
-        newErrors["professionalInfo.specialties"] = "Selecciona al menos una especialidad"
-      }*/
       if (!formData.professionalInfo.certification) {
         newErrors["professionalInfo.certification"] = "La certificación es requerida"
       }
@@ -317,14 +313,7 @@ const Register = () => {
                   onChange={handleChange}
                 />
                 <label className="checkbox-label">
-                  Acepto los{" "}
-                  <Link to="/terms" className="terms-link">
-                    Términos y Condiciones
-                  </Link>{" "}
-                  y la{" "}
-                  <Link to="/privacy" className="terms-link">
-                    Política de Privacidad
-                  </Link>
+                  Acepto los Términos y Condiciones 
                 </label>
               </div>
               {errors.agreeToTerms && <span className="error-message">{errors.agreeToTerms}</span>}

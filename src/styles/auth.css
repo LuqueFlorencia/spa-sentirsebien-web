@@ -110,8 +110,7 @@ input[type="tel"] {
 }
 
 input[type="checkbox"] {
-  width: 20%;
-  margin-right: 8px;
+  width: 12%;
 }
 
 input:focus {
@@ -298,13 +297,9 @@ input.error {
 }
 
 .terms-link {
-  color: var(--highlight-color);
+  color: #666;
   text-decoration: none;
   transition: color 0.3s ease;
-}
-
-.terms-link:hover {
-  text-decoration: underline;
 }
 
 /* Registration Success */
