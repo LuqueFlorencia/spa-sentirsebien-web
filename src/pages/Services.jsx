@@ -21,6 +21,7 @@ const Services = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const { isLoggedIn } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -52,7 +53,7 @@ const Services = () => {
         }
       }
     }
-  }, [location.search])
+  }, [location.search, services])
 
   useEffect(() => {
     if (services.length === 0) return;
@@ -80,7 +81,7 @@ const Services = () => {
 
   const handleBooking = (service) => {
     if (!isLoggedIn) {
-      document.getElementById("login-required-modal").classList.add("visible")
+      setShowLoginModal(true);
     } else {
       navigate(`/booking/${service.id}`)
     }
@@ -95,10 +96,6 @@ const Services = () => {
       const newUrl = params.toString() ? `${location.pathname}?${params.toString()}` : location.pathname
       navigate(newUrl, { replace: true })
     }
-  }
-
-  const closeLoginRequiredModal = () => {
-    document.getElementById("login-required-modal").classList.remove("visible")
   }
 
   return (
@@ -187,8 +184,8 @@ const Services = () => {
       {/* Service Detail Modal */}
       {selectedService && <ServiceModal service={selectedService} onClose={closeModal} isLoggedIn={isLoggedIn} />}
 
-      {/* Login Required Modal */}
-      <div id="login-required-modal" className="login-required-modal">
+      {showLoginModal && (
+      <div className="login-required-modal visible">
         <div className="login-required-content">
           <h3>Iniciar Sesión</h3>
           <p>Para reservar este servicio, por favor iniciá sesión.</p>
@@ -196,20 +193,24 @@ const Services = () => {
             <button
               className="login-required-login-btn"
               onClick={() => {
-                closeLoginRequiredModal()
+                setShowLoginModal(false);
                 navigate("/login")
               }}
             >
               Iniciar Sesión
             </button>
           </div>
-          <button className="login-required-close-btn" onClick={closeLoginRequiredModal}>
-            Cerrar
+          <button 
+            className="login-required-close-btn" 
+            onClick={() => setShowLoginModal(false)}
+            >  
+              Cerrar
           </button>
         </div>
       </div>
+      )}
     </div>
-  )
+  );
 }
 
 export default Services
