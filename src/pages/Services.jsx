@@ -20,11 +20,18 @@ const Services = () => {
   const [selectedService, setSelectedService] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
   const { isLoggedIn } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchServices = async () => {
-      const result = await getActiveServices();
-      setServices(result.length > 0 ? result : []);
+      try {
+        const result = await getActiveServices();
+        setServices(result.length > 0 ? result : []);
+      } catch (error) {
+        setServices([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
   
     fetchServices();
@@ -148,7 +155,12 @@ const Services = () => {
 
       {/* Services Grid */}
       <div className="services-grid-container">
-        {filteredServices.length > 0 ? (
+        {isLoading ? (
+          <div className="loader-container">
+            <div className="loader-spinner" />
+            <p className="loader-text">Cargando servicios...</p>
+          </div>
+        ) : filteredServices.length > 0 ? (
           <div className="services-grid">
             {filteredServices.map((service) => (
               <div className="service-grid-item" key={service.id}>
@@ -162,8 +174,8 @@ const Services = () => {
             <button
               className="reset-filters-button"
               onClick={() => {
-                setActiveCategory("todo")
-                setSearchTerm("")
+                setActiveCategory("todo");
+                setSearchTerm("");
               }}
             >
               Restablecer filtros
