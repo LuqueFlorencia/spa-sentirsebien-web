@@ -46,8 +46,6 @@ const Services = () => {
       const serviceToHighlight = services.find((s) => s.id === highlightId)
       if (serviceToHighlight) {
         setSelectedService(serviceToHighlight)
-
-     
         if (serviceToHighlight.category) {
           setActiveCategory(serviceToHighlight.category)
         }
