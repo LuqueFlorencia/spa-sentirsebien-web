@@ -8,12 +8,21 @@ import "../../index.css"
 import MessageResponseModal from "../../components/MessageResponseModal"
 import UserFormModal from "../../components/UserFormModal"
 import UserDetailsModal from "../../components/UserDetailsModal"
+import PaymentStatistics from "../../components/PaymentStatistics"
 import ProfileConfigModal from "../../components/ProfileConfigModal"
 import NotificationsDropdown from "../../components/NotificationsDropdown"
 import SimpleModal from "../../components/SimpleModal"
 import ServiceDetailsModal from "../../components/ServiceDetailsModal"
-import { getBookings, cancelBooking, confirmBooking } from '../../services/bookingService';
-import { getUsers, getSpecificUser, updateUser, updateUserById, approveUser, deleteUser, realDeleteUser } from '../../services/userService';
+import { getBookings, cancelBooking, confirmBooking } from "../../services/bookingService"
+import {
+  getUsers,
+  getSpecificUser,
+  updateUser,
+  updateUserById,
+  approveUser,
+  deleteUser,
+  realDeleteUser,
+} from "../../services/userService"
 import { registerUser } from "../../services/authService"
 import { getActiveServices, updateService, deleteService, newService } from "../../services/serviceService"
 
@@ -25,7 +34,7 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState([])
   const [messages, setMessages] = useState(mockContactMessages)
   const [servicesList, setServicesList] = useState([])
-  const [professionals, setProfessionals] = useState([]);
+  const [professionals, setProfessionals] = useState([])
   const [pendingProfessionals, setPendingProfessionals] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -42,8 +51,8 @@ const AdminDashboard = () => {
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false)
   const [currentUser2, setCurrentUser2] = useState(null)
   const [showProfileModal, setShowProfileModal] = useState(false)
-  const [selectedUserToEdit, setSelectedUserToEdit] = useState(null);
-  const [editingOwnProfile, setEditingOwnProfile] = useState(false);
+  const [selectedUserToEdit, setSelectedUserToEdit] = useState(null)
+  const [editingOwnProfile, setEditingOwnProfile] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [userRoleFilter, setUserRoleFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
@@ -51,8 +60,8 @@ const AdminDashboard = () => {
   const [showServiceEditModal, setShowServiceEditModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("")
+  const [showErrorModal, setShowErrorModal] = useState(false)
 
   useEffect(() => {
     if (!isAdmin) {
@@ -60,49 +69,44 @@ const AdminDashboard = () => {
     }
   }, [isAdmin, navigate])
 
-  const handleLogout = async () => {
-    await logout()
-    window.location.href = "/";
-  }
-
   useEffect(() => {
-    if (currentUser) {      
-      getUserBookings();
-      loadUsers();
-      fetchActiveProfessionals();
-      fetchPendingProfessionals();
-      fetchServices();
+    if (currentUser) {
+      getUserBookings()
+      loadUsers()
+      fetchActiveProfessionals()
+      fetchPendingProfessionals()
+      fetchServices()
     }
   }, [currentUser])
 
   const getUserBookings = async () => {
-    const authToken = localStorage.getItem('authToken');
-    const userBookings =  await getBookings(authToken, currentUser.id);
+    const authToken = localStorage.getItem("authToken")
+    const userBookings = await getBookings(authToken, currentUser.id)
     setBookings(userBookings.length > 0 ? userBookings : [])
   }
 
   const loadUsers = async () => {
-    const allUsers = await getUsers();
-    setUsers(allUsers.length > 0 ? allUsers : []);
+    const allUsers = await getUsers()
+    setUsers(allUsers.length > 0 ? allUsers : [])
   }
 
   const fetchServices = async () => {
-    const servicesList = await getActiveServices();
-    setServicesList(servicesList.length > 0 ? servicesList : []);
-  };
+    const servicesList = await getActiveServices()
+    setServicesList(servicesList.length > 0 ? servicesList : [])
+  }
 
   const fetchActiveProfessionals = async () => {
-    const userType = "profesional";
-    const state = true;
-    const data = await getSpecificUser(userType, state);
-    setProfessionals(data);
+    const userType = "profesional"
+    const state = true
+    const data = await getSpecificUser(userType, state)
+    setProfessionals(data)
   }
 
   const fetchPendingProfessionals = async () => {
-    const userType = "profesional";
-    const state = false;
-    const data = await getSpecificUser(userType, state);
-    setPendingProfessionals(data);
+    const userType = "profesional"
+    const state = false
+    const data = await getSpecificUser(userType, state)
+    setPendingProfessionals(data)
   }
 
   const recentBookings = [...bookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5)
@@ -113,6 +117,11 @@ const AdminDashboard = () => {
     completed: bookings.filter((b) => b.status === "completado").length,
     cancelled: bookings.filter((b) => b.status === "cancelado").length,
     total: bookings.length,
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    window.location.href = "/"
   }
 
   const handleMessageStatusChange = (messageId, newStatus) => {
@@ -139,53 +148,52 @@ const AdminDashboard = () => {
 
   const handleDelete = async () => {
     try {
-      const token = localStorage.getItem('authToken');    
-      
+      const token = localStorage.getItem("authToken")
+
       if (deleteType === "service") {
         await deleteService(token, itemToOperate)
-        fetchServices();
+        fetchServices()
       } else if (deleteType === "message") {
         setMessages(messages.filter((message) => message.id !== itemToOperate))
       } else if (deleteType === "user") {
         await deleteUser(token, itemToOperate)
       }
-      setSuccessMessage("Elemento eliminado correctamente");
-      setShowSuccessModal(true);
+      setSuccessMessage("Elemento eliminado correctamente")
+      setShowSuccessModal(true)
       loadUsers()
-      
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Error al eliminar el turno.";
-      setErrorMessage(errorMessage);
+      const errorMessage = err.response?.data?.message || "Error al eliminar el turno."
+      setErrorMessage(errorMessage)
     } finally {
       setShowDeleteModal(false)
     }
   }
 
   const handleCancelBooking = async () => {
-    try {      
-      const token = localStorage.getItem('authToken');   
-      await cancelBooking(token, itemToOperate);
-      setSuccessMessage("Reserva cancelada correctamente");
-      setShowSuccessModal(true);
+    try {
+      const token = localStorage.getItem("authToken")
+      await cancelBooking(token, itemToOperate)
+      setSuccessMessage("Reserva cancelada correctamente")
+      setShowSuccessModal(true)
       getUserBookings()
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Error al cancelar el turno.";
-      setErrorMessage(errorMessage);
+      const errorMessage = err.response?.data?.message || "Error al cancelar el turno."
+      setErrorMessage(errorMessage)
     } finally {
       setShowCancelModal(false)
     }
   }
 
   const handleConfirmBooking = async () => {
-    try {      
-      const token = localStorage.getItem('authToken');   
-      await confirmBooking(token, itemToOperate);
-      setSuccessMessage("Reserva confirmada correctamente");
-      setShowSuccessModal(true);
+    try {
+      const token = localStorage.getItem("authToken")
+      await confirmBooking(token, itemToOperate)
+      setSuccessMessage("Reserva confirmada correctamente")
+      setShowSuccessModal(true)
       getUserBookings()
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Error al confirmar el turno.";
-      setErrorMessage(errorMessage);
+      const errorMessage = err.response?.data?.message || "Error al confirmar el turno."
+      setErrorMessage(errorMessage)
     } finally {
       setShowConfirmModal(false)
     }
@@ -205,44 +213,60 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("authToken")
 
-      const { name, shortDescription, description, category, price, duration, benefits, includes, professional, image } = serviceData;
-      const payload = { name, shortDescription, description, category, price, duration, 
-        image: image || null, 
+      const {
+        name,
+        shortDescription,
+        description,
+        category,
+        price,
+        duration,
+        benefits,
+        includes,
+        professional,
+        image,
+      } = serviceData
+      const payload = {
+        name,
+        shortDescription,
+        description,
+        category,
+        price,
+        duration,
+        image: image || null,
         benefits: benefits || [],
         includes: includes || [],
-        professional: professional?.id ? `/users/${professional.id}` : "", 
-      };
-
-      let savedService;
-
-      if (serviceData.id) {
-        savedService = await updateService(token, serviceData.id, payload);
-        setSuccessMessage("Servicio actualizado correctamente");
-      } else {
-        savedService = await newService(token, payload);
-        setSuccessMessage("Servicio creado correctamente");
+        professional: professional?.id ? `/users/${professional.id}` : "",
       }
 
-      savedService.price = Number(savedService.price);
-      savedService.duration = Number(savedService.duration);
+      let savedService
+
+      if (serviceData.id) {
+        savedService = await updateService(token, serviceData.id, payload)
+        setSuccessMessage("Servicio actualizado correctamente")
+      } else {
+        savedService = await newService(token, payload)
+        setSuccessMessage("Servicio creado correctamente")
+      }
+
+      savedService.price = Number(savedService.price)
+      savedService.duration = Number(savedService.duration)
 
       setServicesList((prevList) => {
         if (serviceData.id) {
-          return prevList.map((s) => (s.id === savedService.id ? savedService : s));
+          return prevList.map((s) => (s.id === savedService.id ? savedService : s))
         } else {
-          return [...prevList, savedService];
+          return [...prevList, savedService]
         }
-      });
-      
-      setShowSuccessModal(true);
-      fetchServices();
+      })
 
-    } catch (error) {      
-      const message = error.response?.data?.message || "Ocurrió un error al guardar el servicio.";
-      setErrorMessage(message);
-      setShowErrorModal(true);
+      setShowSuccessModal(true)
+      fetchServices()
+    } catch (error) {
+      const message = error.response?.data?.message || "Ocurrió un error al guardar el servicio."
+      setErrorMessage(message)
+      setShowErrorModal(true)
     } finally {
-      setShowServiceEditModal(false);
+      setShowServiceEditModal(false)
     }
   }
 
@@ -252,25 +276,21 @@ const AdminDashboard = () => {
   }
 
   const handleSendResponse = (messageId, responseText) => {
-    // In a real app, you would send the response to the backend
     console.log(`Sending response to message ${messageId}: ${responseText}`)
-
-    // Update the message status to "responded"
     handleMessageStatusChange(messageId, "responded")
   }
 
   const handleAddUser = async (userData) => {
     try {
-      await registerUser(userData);
+      await registerUser(userData)
       setUsers([...users, userData])
-      setSuccessMessage("Usuario agregado correctamente");
-      setShowSuccessModal(true);
-      loadUsers();
-      
+      setSuccessMessage("Usuario agregado correctamente")
+      setShowSuccessModal(true)
+      loadUsers()
     } catch (error) {
-      const message = error.response?.data?.message || "Error al actualizar el usuario.";
-      setErrorMessage(message);
-      setShowErrorModal(true);
+      const message = error.response?.data?.message || "Error al actualizar el usuario."
+      setErrorMessage(message)
+      setShowErrorModal(true)
     }
   }
 
@@ -280,73 +300,70 @@ const AdminDashboard = () => {
   }
 
   const handleOpenOwnProfile = () => {
-    setSelectedUserToEdit(currentUser);
-    setEditingOwnProfile(true);
-    setShowProfileModal(true);
-  };
+    setSelectedUserToEdit(currentUser)
+    setEditingOwnProfile(true)
+    setShowProfileModal(true)
+  }
 
-  const handleEditUser = (user) => {   
-    setSelectedUserToEdit(user);
-    setEditingOwnProfile(false);
-    setShowProfileModal(true);
-  };
+  const handleEditUser = (user) => {
+    setSelectedUserToEdit(user)
+    setEditingOwnProfile(false)
+    setShowProfileModal(true)
+  }
 
   const handleSaveProfile = async (updatedUser) => {
-    try {       
-      const token = localStorage.getItem('authToken');
-      
-      if (editingOwnProfile) {     
-        await updateUser(token, updatedUser);
-        setCurrentUser((prev) => ({ ...prev, ...updatedUser }));
+    try {
+      const token = localStorage.getItem("authToken")
+
+      if (editingOwnProfile) {
+        await updateUser(token, updatedUser)
+        setCurrentUser((prev) => ({ ...prev, ...updatedUser }))
       } else {
-        await updateUserById(token, updatedUser.id, updatedUser);
-        setCurrentUser2((prev) => ({ ...prev, ...updatedUser }));
+        await updateUserById(token, updatedUser.id, updatedUser)
+        setCurrentUser2((prev) => ({ ...prev, ...updatedUser }))
       }
 
       setSuccessMessage("Perfil actualizado correctamente")
       setShowSuccessModal(true)
-      loadUsers();
-
-    } catch (error) {      
-      const message = error.response?.data?.message || "Error al actualizar el usuario.";
-      setErrorMessage(message);
-      setShowErrorModal(true);
+      loadUsers()
+    } catch (error) {
+      const message = error.response?.data?.message || "Error al actualizar el usuario."
+      setErrorMessage(message)
+      setShowErrorModal(true)
     } finally {
-      setShowProfileModal(false);
+      setShowProfileModal(false)
     }
   }
-  
+
   const handleApproveRequest = async (professionalId) => {
-    try {     
-      const token = localStorage.getItem('authToken');
+    try {
+      const token = localStorage.getItem("authToken")
       await approveUser(token, professionalId)
 
       setSuccessMessage("Solicitud de profesional aprobada")
       setShowSuccessModal(true)
       fetchPendingProfessionals()
-
     } catch (error) {
-      const message = error.response?.data?.message || "Error al aprobar la solicitud.";
-      setErrorMessage(message);
-      setShowErrorModal(true);
+      const message = error.response?.data?.message || "Error al aprobar la solicitud."
+      setErrorMessage(message)
+      setShowErrorModal(true)
     }
-  };
+  }
 
   const handleRejectRequest = async (professionalId) => {
-    try {          
-      const token = localStorage.getItem('authToken');
+    try {
+      const token = localStorage.getItem("authToken")
       await realDeleteUser(token, professionalId)
 
       setSuccessMessage("Solicitud de profesional rechazada")
       setShowSuccessModal(true)
       fetchPendingProfessionals()
-
     } catch (error) {
-      const message = error.response?.data?.message || "Error al rechazar la solicitud.";
-      setErrorMessage(message);
-      setShowErrorModal(true);
+      const message = error.response?.data?.message || "Error al rechazar la solicitud."
+      setErrorMessage(message)
+      setShowErrorModal(true)
     }
-  };
+  }
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
@@ -394,8 +411,17 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab("overview")}
             data-tab="overview"
           >
-            <span className="admin-nav-icon">📊</span>
+            <span className="admin-nav-icon">📋</span>
             <span>Resumen</span>
+          </button>
+
+          <button
+            className={`admin-nav-item ${activeTab === "statistics" ? "active" : ""}`}
+            onClick={() => setActiveTab("statistics")}
+            data-tab="statistics"
+          >
+            <span className="admin-nav-icon">📊</span>
+            <span>Estadísticas</span>
           </button>
 
           <button
@@ -424,8 +450,7 @@ const AdminDashboard = () => {
             <span className="admin-nav-icon">👥</span>
             <span>Usuarios</span>
           </button>
-          
-          {/* Add a new nav item for professional approvals */}
+
           <button
             className={`admin-nav-item ${activeTab === "approvals" ? "active" : ""}`}
             onClick={() => setActiveTab("approvals")}
@@ -457,6 +482,7 @@ const AdminDashboard = () => {
         <div className="admin-header">
           <h1 className="admin-title">
             {activeTab === "overview" && "Resumen del Panel"}
+            {activeTab === "statistics" && "Estadísticas de Pagos"}
             {activeTab === "bookings" && "Gestión de Reservas"}
             {activeTab === "services" && "Gestión de Servicios"}
             {activeTab === "users" && "Gestión de Usuarios"}
@@ -477,7 +503,6 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {/* Notifications Dropdown */}
           {showNotifications && (
             <>
               <div
@@ -577,7 +602,6 @@ const AdminDashboard = () => {
                                 {booking.status === "cancelado" && "Cancelada"}
                               </span>
                             </td>
-
                           </tr>
                         ))}
                       </tbody>
@@ -621,6 +645,12 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "statistics" && (
+            <div className="admin-statistics">
+              <PaymentStatistics bookings={bookings} userRole="admin" currentUserId={currentUser?.id} />
             </div>
           )}
 
@@ -683,9 +713,7 @@ const AdminDashboard = () => {
                           {booking.date} {booking.time}
                         </td>
                         <td>
-                          <span className={`booking-status ${booking.status}`}>
-                            {booking.status}
-                          </span>    
+                          <span className={`booking-status ${booking.status}`}>{booking.status}</span>
                         </td>
                         <td>
                           <span className={`payment-status ${booking.paymentStatus}`}>
@@ -697,13 +725,13 @@ const AdminDashboard = () => {
                         <td>
                           <div className="admin-table-actions">
                             <button
-                                className="admin-table-action-btn confirm"
-                                title="Confirmar reserva"
-                                onClick={() => confirmConfirm(booking.id, "booking")}
-                                disabled={booking.status === "confirmado"}
-                                style={booking.status === "confirmado" ? { opacity: 0.3 } : {}}
-                              >
-                                ✅ 
+                              className="admin-table-action-btn confirm"
+                              title="Confirmar reserva"
+                              onClick={() => confirmConfirm(booking.id, "booking")}
+                              disabled={booking.status === "confirmado"}
+                              style={booking.status === "confirmado" ? { opacity: 0.3 } : {}}
+                            >
+                              ✅
                             </button>
                             <button
                               className="admin-table-action-btn cancel"
@@ -782,7 +810,9 @@ const AdminDashboard = () => {
                       <p className="admin-service-description">{service.shortDescription}</p>
                       <div className="admin-service-details">
                         <span className="admin-service-category">Categoría: {service.category}</span>
-                        <span className="admin-service-price">Precio: ${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</span>
+                        <span className="admin-service-price">
+                          Precio: ${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}
+                        </span>
                         <span className="admin-service-duration">Duración: {service.duration} min</span>
                       </div>
                       <div className="admin-service-actions">
@@ -892,7 +922,7 @@ const AdminDashboard = () => {
                               className="admin-table-action-btn delete"
                               onClick={() => confirmDelete(user.id, "user")}
                               title="Eliminar usuario"
-                              disabled={user.userType === "admin"} // Prevent deleting the main admin
+                              disabled={user.userType === "admin"}
                               style={user.userType === "admin" ? { opacity: 0.5, cursor: "not-allowed" } : {}}
                             >
                               🗑️
@@ -906,8 +936,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
-          
-          {/* Add the approvals tab content */}
+
           {activeTab === "approvals" && (
             <div className="admin-approvals">
               <div className="admin-section-actions">
@@ -932,7 +961,7 @@ const AdminDashboard = () => {
                         `${professional.name} ${professional.lastname}`
                           .toLowerCase()
                           .includes(searchTerm.toLowerCase()) ||
-                        professional.email.toLowerCase().includes(searchTerm.toLowerCase())
+                        professional.email.toLowerCase().includes(searchTerm.toLowerCase()),
                     )
                     .map((professional) => (
                       <div className="admin-approval-card" key={professional.id}>
@@ -963,12 +992,16 @@ const AdminDashboard = () => {
                           <div className="admin-approval-detail">
                             <span className="admin-approval-label">Especialidades:</span>
                             <span className="admin-approval-value">
-                            <span className="admin-approval-value">{professional.specialties.join(", ") || "No especificado"}</span>
+                              <span className="admin-approval-value">
+                                {professional.specialties.join(", ") || "No especificado"}
+                              </span>
                             </span>
                           </div>
                           <div className="admin-approval-detail">
                             <span className="admin-approval-label">Certificación:</span>
-                            <span className="admin-approval-value">{professional.certification || "No especificado"}</span>
+                            <span className="admin-approval-value">
+                              {professional.certification || "No especificado"}
+                            </span>
                           </div>
                           <div className="admin-approval-detail">
                             <span className="admin-approval-label">Biografía:</span>
@@ -1089,7 +1122,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Appointments Modals */}
       {showDeleteModal && (
         <SimpleModal
           isOpen={showDeleteModal}
@@ -1126,7 +1158,6 @@ const AdminDashboard = () => {
         </SimpleModal>
       )}
 
-      {/* Service Edit Modal */}
       {showServiceEditModal && (
         <div className="admin-modal-overlay">
           <div className="admin-modal service-modal">
@@ -1206,16 +1237,16 @@ const AdminDashboard = () => {
                         type="text"
                         value={benefit}
                         onChange={(e) => {
-                          const updated = [...currentService.benefits];
-                          updated[index] = e.target.value;
-                          setCurrentService({ ...currentService, benefits: updated });
+                          const updated = [...currentService.benefits]
+                          updated[index] = e.target.value
+                          setCurrentService({ ...currentService, benefits: updated })
                         }}
                       />
                       <button
                         type="button"
                         onClick={() => {
-                          const updated = currentService.benefits.filter((_, i) => i !== index);
-                          setCurrentService({ ...currentService, benefits: updated });
+                          const updated = currentService.benefits.filter((_, i) => i !== index)
+                          setCurrentService({ ...currentService, benefits: updated })
                         }}
                       >
                         ❌
@@ -1237,16 +1268,16 @@ const AdminDashboard = () => {
                         type="text"
                         value={include}
                         onChange={(e) => {
-                          const updated = [...currentService.includes];
-                          updated[index] = e.target.value;
-                          setCurrentService({ ...currentService, includes: updated });
+                          const updated = [...currentService.includes]
+                          updated[index] = e.target.value
+                          setCurrentService({ ...currentService, includes: updated })
                         }}
                       />
                       <button
                         type="button"
                         onClick={() => {
-                          const updated = currentService.includes.filter((_, i) => i !== index);
-                          setCurrentService({ ...currentService, includes: updated });
+                          const updated = currentService.includes.filter((_, i) => i !== index)
+                          setCurrentService({ ...currentService, includes: updated })
                         }}
                       >
                         ❌
@@ -1265,8 +1296,8 @@ const AdminDashboard = () => {
                   <select
                     value={currentService.professional?.id || ""}
                     onChange={(e) => {
-                      const selectedPro = professionals.find((p) => p.id === e.target.value);
-                      setCurrentService({ ...currentService, professional: selectedPro || "" });
+                      const selectedPro = professionals.find((p) => p.id === e.target.value)
+                      setCurrentService({ ...currentService, professional: selectedPro || "" })
                     }}
                     required
                   >
@@ -1305,7 +1336,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Service Details Modal */}
       <ServiceDetailsModal
         isOpen={showServiceDetailsModal}
         onClose={() => setShowServiceDetailsModal(false)}
@@ -1313,7 +1343,6 @@ const AdminDashboard = () => {
         showButton={false}
       />
 
-      {/* Message Response Modal */}
       <MessageResponseModal
         isOpen={showResponseModal}
         onClose={() => setShowResponseModal(false)}
@@ -1321,32 +1350,30 @@ const AdminDashboard = () => {
         onSendResponse={handleSendResponse}
       />
 
-      {/* User Form Modal */}
       <UserFormModal
         isOpen={showUserFormModal}
         onClose={() => setShowUserFormModal(false)}
         onSaveUser={handleAddUser}
       />
 
-      {/* User Details Modal */}
       <UserDetailsModal
         isOpen={showUserDetailsModal}
         onClose={() => setShowUserDetailsModal(false)}
         user={currentUser2}
       />
 
-      {/* Profile Config Modal */}
       <ProfileConfigModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         user={selectedUserToEdit}
         onSaveProfile={handleSaveProfile}
       />
-      
-      {/* Success Modal */}
+
       <SimpleModal
         isOpen={showSuccessModal}
-        onClose={() => {setShowSuccessModal(false)}}
+        onClose={() => {
+          setShowSuccessModal(false)
+        }}
         title="Operación Exitosa"
       >
         <div className="success-modal-content">

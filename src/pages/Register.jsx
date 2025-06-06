@@ -128,7 +128,7 @@ const Register = () => {
     }
   }
 
-  const handleProfessionalConfirm = async () => {    
+  const handleProfessionalConfirm = async () => {
     const result = await register(transformFormData())
     if (result.success) {
       setShowApprovalPopup(false)
@@ -313,7 +313,7 @@ const Register = () => {
                   onChange={handleChange}
                 />
                 <label className="checkbox-label">
-                  Acepto los Términos y Condiciones 
+                  Acepto los Términos y Condiciones y la Política de Privacidad
                 </label>
               </div>
               {errors.agreeToTerms && <span className="error-message">{errors.agreeToTerms}</span>}

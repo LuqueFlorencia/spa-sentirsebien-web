@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-
   const register = async (userData) => {
     try {      
       const response = await registerUser (userData);
@@ -52,14 +51,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const updateCurrentUser = (updatedUserData) => {
-    setCurrentUser((prev) => ({
-      ...prev,
-      ...updatedUserData,
-    }));
-  };
-
-  
   const logout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
@@ -67,6 +58,13 @@ export const AuthProvider = ({ children }) => {
     
     return { success: true }
   }
+
+  const updateCurrentUser = (updatedUserData) => {
+    setCurrentUser((prev) => ({
+      ...prev,
+      ...updatedUserData,
+    }));
+  };
 
   const value = {
     currentUser,

@@ -5,7 +5,7 @@ import { useAuth } from "../../contexts/AuthContext"
 import "../../styles/professional.css"
 import SimpleModal from "../../components/SimpleModal"
 import ScheduleSelector from "../../components/ScheduleSelector"
-import { getProfBookings, cancelBooking, confirmBooking, printBooking } from '../../services/bookingService';
+import { getProfBookings, cancelBooking, confirmBooking } from '../../services/bookingService';
 import { updateUser, setSchedule, getClients } from '../../services/userService';
 import { getProfessionalServices } from "../../services/serviceService"
 import ClientHistoryModal from "../../components/ClientHistoryModal"
@@ -13,7 +13,7 @@ import UserDetailsModal from "../../components/UserDetailsModal"
 
 const ProfessionalDashboard = () => {
   const navigate = useNavigate()
-  const { currentUser, logout, isProfessional } = useAuth()
+  const { currentUser, logout, isProfessional, updateCurrentUser } = useAuth()
   const [activeTab, setActiveTab] = useState("schedule")
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
   const [bookings, setBookings] = useState([])
@@ -57,11 +57,6 @@ const ProfessionalDashboard = () => {
       navigate("/login")
     }
   }, [isProfessional, navigate])
-
-  const handleLogout = async () => {
-    await logout()
-    window.location.href = "/";
-  }
 
   useEffect(() => {
     if (currentUser) {      
@@ -118,6 +113,11 @@ const ProfessionalDashboard = () => {
 
   const pendingBookings = professionalBookings.filter((booking) => booking.status === "pendiente")
 
+  const handleLogout = async () => {
+    await logout()
+    window.location.href = "/";
+  }
+
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value)
   }
@@ -132,30 +132,6 @@ const ProfessionalDashboard = () => {
     const currentDate = new Date(selectedDate)
     currentDate.setDate(currentDate.getDate() + 1)
     setSelectedDate(currentDate.toISOString().split("T")[0])
-  }
-
-  const handlePrintAppt = async (appointment) => {
-    try {      
-      const token = localStorage.getItem('authToken');   
-
-      const response = await printBooking(token, appointment);
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Cita_${appointment.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || "Error al cancelar el turno.";
-      setErrorMessage(errorMessage);
-    } finally {
-      setShowCancelModal(false)
-    }
   }
 
   const confirmConfirm = (id) => {
@@ -248,6 +224,7 @@ const ProfessionalDashboard = () => {
  
       const token = localStorage.getItem("authToken");
       await updateUser(token, updatedUser);
+      updateCurrentUser(updatedUser);
 
       setSuccessMessage("Perfil actualizado correctamente")
       setSuccessAction("profile-update")
@@ -497,12 +474,6 @@ const ProfessionalDashboard = () => {
                                 Confirmar
                               </button>
                             )}
-                            <button
-                                className="professional-appointment-action-btn print"
-                                onClick={() => handlePrintAppt(appointment)}
-                              >
-                                Imprimir PDF
-                            </button>
                           </div>
                         </div>
                       ))}
@@ -548,12 +519,6 @@ const ProfessionalDashboard = () => {
                                 Confirmar
                               </button>
                             )}
-                            <button
-                                className="professional-appointment-action-btn print"
-                                onClick={() => handlePrintAppt(appointment)}
-                              >
-                                Imprimir PDF
-                            </button>
                           </div>
                         </div>
                       ))}

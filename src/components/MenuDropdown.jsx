@@ -67,13 +67,13 @@ const MenuDropdown = ({ isMenuOpen, setIsMenuOpen }) => {
           </div>
           <ul className="menu-list">
             <li className="menu-item">
-             <Link 
-              to={`/${currentUser.userType}/dashboard`}
-              className="menu-link" 
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Mi Perfil
-            </Link>
+              <Link 
+                to={`/${currentUser.userType}/dashboard`}
+                className="menu-link" 
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Mi Perfil
+              </Link>
             </li>
             <li className="menu-item">
               <button className="menu-link" onClick={ handleLogout }>

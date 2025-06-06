@@ -441,15 +441,6 @@
   background-color: #c3e6cb;
 }
 
-.professional-appointment-action-btn.print {
-  background-color: #f8b3b3;
-  color: #754242;
-}
-
-.professional-appointment-action-btn.print:hover {
-  background-color: #e2a3a3;
-}
-
 .professional-no-data {
   font-family: "Montserrat", sans-serif;
   font-size: 0.9rem;

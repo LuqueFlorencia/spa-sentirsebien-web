@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
 import "../../styles/client.css"
 import SimpleModal from "../../components/SimpleModal"
-import { getBookings, cancelBooking } from '../../services/bookingService';
-import { updateUser } from '../../services/userService';
+import { getBookings, cancelBooking } from "../../services/bookingService"
+import PaymentStatistics from "../../components/PaymentStatistics"
+import { updateUser } from "../../services/userService"
 
 const ClientDashboard = () => {
   const navigate = useNavigate()
@@ -29,8 +30,8 @@ const ClientDashboard = () => {
   const [notificationsRead, setNotificationsRead] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("")
+  const [showErrorModal, setShowErrorModal] = useState(false)
 
   useEffect(() => {
     if (!isClient) {
@@ -38,14 +39,9 @@ const ClientDashboard = () => {
     }
   }, [isClient, navigate])
 
-  const handleLogout = async () => {
-    await logout()
-    window.location.href = "/";
-  }
-
   useEffect(() => {
-    if (currentUser) {      
-      getUserBookings();
+    if (currentUser) {
+      getUserBookings()
     }
 
     setProfileData({
@@ -69,14 +65,19 @@ const ClientDashboard = () => {
     }
   }, [notificationsRef])
 
+  const handleLogout = async () => {
+    await logout()
+    window.location.href = "/"
+  }
+
   const openDetailsModal = (booking) => {
     setSelectedBookingDetails(booking)
     setShowDetailsModal(true)
   }
 
-  const getUserBookings = async () =>{
-    const authToken = localStorage.getItem('authToken');
-    const userBookings =  await getBookings(authToken, currentUser.id);
+  const getUserBookings = async () => {
+    const authToken = localStorage.getItem("authToken")
+    const userBookings = await getBookings(authToken, currentUser.id)
     setBookings(userBookings.length > 0 ? userBookings : [])
   }
 
@@ -97,9 +98,9 @@ const ClientDashboard = () => {
     const canCancel = canCancelBooking(bookingToCancel)
 
     try {
-      const authToken = localStorage.getItem('authToken');   
-      await cancelBooking(authToken, bookingToCancel.id);
-  
+      const authToken = localStorage.getItem("authToken")
+      await cancelBooking(authToken, bookingToCancel.id)
+
       setBookings(
         bookings.map((booking) =>
           booking.id === bookingToCancel.id
@@ -109,9 +110,9 @@ const ClientDashboard = () => {
                 cancellationReason,
                 refundEligible: canCancel,
               }
-            : booking
-        )
-      );
+            : booking,
+        ),
+      )
 
       setSuccessMessage(
         canCancel
@@ -121,12 +122,11 @@ const ClientDashboard = () => {
           : bookingToCancel.paymentMethod === "transfer"
             ? "Tu reserva ha sido cancelada. Como la cancelación es con menos de 24 horas de anticipación, no se realizará reembolso."
             : "Tu reserva ha sido cancelada. Como la cancelación es con menos de 24 horas de anticipación, se aplicará el cargo completo.",
-      );
-      setShowSuccessModal(true);
-
+      )
+      setShowSuccessModal(true)
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Error al cancelar el turno.";
-      setErrorMessage(errorMsg);
+      const errorMsg = err.response?.data?.message || "Error al cancelar el turno."
+      setErrorMessage(errorMsg)
     } finally {
       setShowCancelModal(false)
       setBookingToCancel(null)
@@ -135,29 +135,28 @@ const ClientDashboard = () => {
   }
 
   const handleProfileUpdate = async () => {
-    try {      
+    try {
       const updatedUser = {
         ...currentUser,
         name: profileData.name,
         lastname: profileData.lastname,
         telephone: profileData.telephone,
-      };
-      delete updatedUser.id;
- 
-      const token = localStorage.getItem("authToken");
-      await updateUser(token, updatedUser);
-      updateCurrentUser(updatedUser);
+      }
+      delete updatedUser.id
+
+      const token = localStorage.getItem("authToken")
+      await updateUser(token, updatedUser)
+      updateCurrentUser(updatedUser)
 
       setSuccessMessage("Perfil actualizado correctamente")
       setShowSuccessModal(true)
-
     } catch (error) {
-      console.error("Error al actualizar perfil:", error);
-      const message = error.response?.data?.message || "Error al actualizar el usuario.";
-      setErrorMessage(message);
-      setShowErrorModal(true);
+      console.error("Error al actualizar perfil:", error)
+      const message = error.response?.data?.message || "Error al actualizar el usuario."
+      setErrorMessage(message)
+      setShowErrorModal(true)
     } finally {
-      setShowProfileModal(false);
+      setShowProfileModal(false)
     }
   }
 
@@ -209,6 +208,14 @@ const ClientDashboard = () => {
           </button>
 
           <button
+            className={`client-nav-item ${activeTab === "statistics" ? "active" : ""}`}
+            onClick={() => setActiveTab("statistics")}
+          >
+            <span className="client-nav-icon">📊</span>
+            <span>Mis Estadísticas</span>
+          </button>
+
+          <button
             className={`client-nav-item ${activeTab === "profile" ? "active" : ""}`}
             onClick={() => setActiveTab("profile")}
           >
@@ -230,6 +237,7 @@ const ClientDashboard = () => {
           <h1 className="client-title">
             {activeTab === "bookings" && "Mis Reservas"}
             {activeTab === "history" && "Mi Historial"}
+            {activeTab === "statistics" && "Estadísticas de Pago"}
             {activeTab === "profile" && "Mi Perfil"}
           </h1>
           <div className="client-header-actions">
@@ -446,6 +454,12 @@ const ClientDashboard = () => {
             </div>
           )}
 
+          {activeTab === "statistics" && (
+            <div className="client-statistics">
+              <PaymentStatistics bookings={bookings} userRole="client" currentUserId={currentUser?.id} />
+            </div>
+          )}
+
           {activeTab === "profile" && (
             <div className="client-profile">
               <div className="client-profile-header">
@@ -516,7 +530,6 @@ const ClientDashboard = () => {
         </div>
       </div>
 
-      {/* Cancel Booking Modal */}
       {showCancelModal && bookingToCancel && (
         <div className="client-modal-overlay">
           <div className="client-modal">
@@ -580,7 +593,6 @@ const ClientDashboard = () => {
         </div>
       )}
 
-      {/* Modal para Ver Detalles */}
       {showDetailsModal && selectedBookingDetails && (
         <SimpleModal
           isOpen={showDetailsModal}
@@ -645,7 +657,6 @@ const ClientDashboard = () => {
         </SimpleModal>
       )}
 
-      {/* Edit Profile Modal */}
       {showProfileModal && (
         <SimpleModal
           isOpen={showProfileModal}
@@ -697,7 +708,6 @@ const ClientDashboard = () => {
         </SimpleModal>
       )}
 
-      {/* Modal de éxito */}
       {showSuccessModal && (
         <SimpleModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} title="Operación Exitosa">
           <div className="success-modal-content">

@@ -19,7 +19,7 @@ const Booking = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null)
   const [bookingConfirmed, setBookingConfirmed] = useState(false)
   const [bookingData, setBookingData] = useState(null)
-  const [bookingInProgress, setBookingInProgress] = useState(false);
+  const [bookingInProgress, setBookingInProgress] = useState(false)
   const [error, setError] = useState("")
     
   // selectedPaymentMethod: "MercadoPago" or "Efectivo"
