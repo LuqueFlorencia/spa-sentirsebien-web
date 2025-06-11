@@ -151,7 +151,7 @@ const Header = () => {
             <Link to="/about-us">Nosotros</Link>
           </li>
           <li>
-            <Link to="/">Add commentMore actions
+            <Link to="/">
               <img src={Logo || "/placeholder.svg"} alt="Logo" className="logo" />
             </Link>
           </li>
