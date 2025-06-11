@@ -91,7 +91,6 @@
 .search-text-input {
   width: 230px;
 }
-
 .search-input.visible {
   visibility: visible;
   opacity: 1;
@@ -176,11 +175,11 @@
   .nav-links {
     gap: 20px;
   }
-}
 
-.search-text-input {
+  .search-text-input {
     width: 110px;
   }
+}
 
 @media (max-width: 768px) {
   .header {
@@ -202,11 +201,11 @@
     right: 5%;
     top: 80px;
   }
-}
 
-.search-text-input {
+  .search-text-input {
     width: 110px;
   }
+}
 
 @media (max-width: 576px) {
   .nav-links li:not(:nth-child(3)) {

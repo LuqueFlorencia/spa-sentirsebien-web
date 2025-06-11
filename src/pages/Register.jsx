@@ -2,8 +2,15 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
+import {
+  isOnlyLetters,
+  isValidEmail,
+  isValidPhone,
+  isStrongPassword,
+  doPasswordsMatch,
+} from "../utils/validationUtils"
+
 import "../styles/auth.css"
-import { isOnlyLetters, isValidEmail, isValidPhone, isStrongPassword, doPasswordsMatch } from "../utils/validationUtils"
 
 const Register = () => {
   const navigate = useNavigate()
@@ -53,7 +60,7 @@ const Register = () => {
 
   const validateForm = () => {
     const newErrors = {}
-    
+  
     if (!formData.name.trim()) {
       newErrors.name = "El nombre es requerido"
     } else if (!isOnlyLetters(formData.name)) {
@@ -71,19 +78,19 @@ const Register = () => {
     } else if (!isValidEmail(formData.email)) {
       newErrors.email = "Formato de email inválido"
     }
-    
+  
     if (!formData.password) {
       newErrors.password = "La contraseña es requerida"
     } else if (!isStrongPassword(formData.password)) {
       newErrors.password = "La contraseña debe tener al menos 6 caracteres"
     }
-    
+  
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Confirmá tu contraseña"
     } else if (!doPasswordsMatch(formData.password, formData.confirmPassword)) {
       newErrors.confirmPassword = "Las contraseñas no coinciden"
     }
-
+  
     if (!formData.telephone.trim()) {
       newErrors.telephone = "El teléfono es requerido"
     } else if (!isValidPhone(formData.telephone)) {
@@ -93,16 +100,18 @@ const Register = () => {
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = "Debés aceptar los términos y condiciones"
     }
-
-    if (!formData.professionalInfo.certification.trim()) {
-      if (!formData.professionalInfo.certification) {
+  
+    if (formData.userType === "profesional") {
+      if (!formData.professionalInfo.certification.trim()) {
         newErrors["professionalInfo.certification"] = "La certificación es requerida"
       }
     }
-
+  
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+  
+  
 
   const transformFormData = () => {
     const { name, lastname, email, password, telephone, userType } = formData;
