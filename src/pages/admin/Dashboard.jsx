@@ -14,15 +14,7 @@ import NotificationsDropdown from "../../components/NotificationsDropdown"
 import SimpleModal from "../../components/SimpleModal"
 import ServiceDetailsModal from "../../components/ServiceDetailsModal"
 import { getBookings, cancelBooking, confirmBooking } from "../../services/bookingService"
-import {
-  getUsers,
-  getSpecificUser,
-  updateUser,
-  updateUserById,
-  approveUser,
-  deleteUser,
-  realDeleteUser,
-} from "../../services/userService"
+import { getUsers, getSpecificUser, updateUser, updateUserById, approveUser, deleteUser, realDeleteUser } from "../../services/userService"
 import { registerUser } from "../../services/authService"
 import { getActiveServices, updateService, deleteService, newService } from "../../services/serviceService"
 

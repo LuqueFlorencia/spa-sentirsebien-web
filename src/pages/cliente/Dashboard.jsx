@@ -7,6 +7,7 @@ import SimpleModal from "../../components/SimpleModal"
 import { getBookings, cancelBooking } from "../../services/bookingService"
 import PaymentStatistics from "../../components/PaymentStatistics"
 import { updateUser } from "../../services/userService"
+import { validateProfileData } from "../../utils/validationUtils"
 
 const ClientDashboard = () => {
   const navigate = useNavigate()
@@ -135,6 +136,13 @@ const ClientDashboard = () => {
   }
 
   const handleProfileUpdate = async () => {
+    const errors = validateProfileData(profileData)
+    if (Object.keys(errors).length > 0) {
+      setErrorMessage(Object.values(errors).join("\n"))
+      setShowErrorModal(true)
+      return
+    }
+
     try {
       const updatedUser = {
         ...currentUser,
@@ -147,11 +155,10 @@ const ClientDashboard = () => {
       const token = localStorage.getItem("authToken")
       await updateUser(token, updatedUser)
       updateCurrentUser(updatedUser)
-
+      
       setSuccessMessage("Perfil actualizado correctamente")
       setShowSuccessModal(true)
     } catch (error) {
-      console.error("Error al actualizar perfil:", error)
       const message = error.response?.data?.message || "Error al actualizar el usuario."
       setErrorMessage(message)
       setShowErrorModal(true)
@@ -702,7 +709,7 @@ const ClientDashboard = () => {
             <input
               type="tel"
               value={profileData.telephone}
-              onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+              onChange={(e) => setProfileData({ ...profileData, telephone: e.target.value })}
             />
           </div>
         </SimpleModal>
