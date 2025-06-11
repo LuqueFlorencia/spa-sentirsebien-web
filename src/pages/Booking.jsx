@@ -5,6 +5,13 @@ import { useAuth } from "../contexts/AuthContext"
 import { getActiveServices } from "../services/serviceService"
 import { getAvailable } from "../services/userService"
 import { createBooking } from "../services/bookingService"
+import {
+  isOnlyLetters,
+  isValidCardNumber,
+  isValidExpiryDate,
+  isValidCVV
+} from "../utils/validationUtils"
+
 import "../styles/booking.css"
 
 const Booking = () => {
@@ -21,14 +28,19 @@ const Booking = () => {
   const [bookingData, setBookingData] = useState(null)
   const [bookingInProgress, setBookingInProgress] = useState(false)
   const [error, setError] = useState("")
-    
-  // selectedPaymentMethod: "MercadoPago" or "Efectivo"
+  
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null)
   const [paymentReceipt, setPaymentReceipt] = useState(null)
-
   const [timeLeft, setTimeLeft] = useState(15 * 60)
   const [finalConfirmation, setFinalConfirmation] = useState(false)
-
+  
+  const [cardNumber, setCardNumber] = useState("")
+  const [cardName, setCardName] = useState("")
+  const [expiryDate, setExpiryDate] = useState("")
+  const [cvv, setCvv] = useState("")
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [finalPrice, setFinalPrice] = useState(0)
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -39,44 +51,82 @@ const Booking = () => {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const serviceList = await getActiveServices();
-        const foundService = serviceList.find((s) => s.id === serviceId);
+        const serviceList = await getActiveServices()
+        const foundService = serviceList.find((s) => s.id === serviceId)
   
         if (foundService) {
-          setService(foundService);
+          setService(foundService)
+          checkDiscountEligibility(foundService.price, selectedDate)
         } else {
-          setError("Servicio no encontrado");
+          setError("Servicio no encontrado")
         }
       } catch (error) {
-        console.error("Error al obtener servicios:", error);
-        setError("Error al cargar servicios");
+        console.error("Error al obtener servicios:", error)
+        setError("Error al cargar servicios")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
   
     if (serviceId) {
-      fetchService();
+      fetchService()
     }
-  }, [serviceId]);  
+  }, [serviceId])  
+
+  const checkDiscountEligibility = (price, date) => {
+    if (!price || !date) return
+    
+    const bookingDate = new Date(date)
+    const now = new Date()
+    
+    const hoursDifference = (bookingDate - now) / (1000 * 60 * 60)
+    
+    if (hoursDifference >= 48) {
+      const originalPrice = parseFloat(price)
+      const discount = originalPrice * 0.15
+      setDiscountApplied(true)
+      setDiscountAmount(discount)
+      setFinalPrice(originalPrice - discount)
+    } else {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      setFinalPrice(parseFloat(price))
+    }
+  }
+
+  useEffect(() => {
+    if (service && service.price) {
+      checkDiscountEligibility(service.price, selectedDate)
+    }
+  }, [selectedDate, service])
 
   useEffect(() => {
     const fetchAvailability = async () => {
       if (!currentUser || !serviceId || !selectedDate) return;
-
+  
       try {
-        const token = localStorage.getItem("authToken")
+        const bookingDate = new Date(selectedDate + "T00:00:00");
+        const now = new Date();
+        const hoursDifference = (bookingDate - now) / (1000 * 60 * 60);
 
+        if (hoursDifference < 48) {
+          setAvailableTimeSlots([]);
+          return;
+        }
+  
+        const token = localStorage.getItem("authToken");
         const response = await getAvailable(token, serviceId, selectedDate);
-        const weekday = new Date(selectedDate + "T00:00:00").toLocaleDateString("es-AR", { weekday: "long" }).toLowerCase();
-        
-        const dayAvailability = response.message.availability.find((d) => d.day.toLowerCase() === weekday);
+        const weekday = bookingDate.toLocaleDateString("es-AR", { weekday: "long" }).toLowerCase();
+  
+        const dayAvailability = response.message.availability.find(
+          (d) => d.day.toLowerCase() === weekday
+        );
+  
         if (dayAvailability && dayAvailability.schedule) {
           setAvailableTimeSlots(dayAvailability.schedule.filter((s) => s.available));
         } else {
           setAvailableTimeSlots([]);
         }
-
       } catch (error) {
         console.error("Error al obtener disponibilidad:", error);
         setAvailableTimeSlots([]);
@@ -85,12 +135,12 @@ const Booking = () => {
   
     fetchAvailability();
   }, [selectedDate, serviceId, currentUser]);
+  
 
   useEffect(() => {
     if (selectedPaymentMethod === "MercadoPago" && !finalConfirmation) {
       if (timeLeft <= 0) {
         alert("El tiempo para subir el comprobante de pago ha expirado. Por favor, intentá la reserva nuevamente.")
-       
         navigate("/services")
         return
       }
@@ -102,17 +152,17 @@ const Booking = () => {
   }, [selectedPaymentMethod, timeLeft, finalConfirmation, navigate])
 
   const handleDateChange = (value) => {
-    setSelectedDate(value);
-    setSelectedTimeSlot(null);
-  };
+    setSelectedDate(value)
+    setSelectedTimeSlot(null)
+  }
 
   const handleTimeSlotSelect = (timeSlot) => {
     setSelectedTimeSlot(timeSlot)
   }
 
   const handleConfirmBooking = async () => {
-  try {
-      setBookingInProgress(true);
+    try {
+      setBookingInProgress(true)
       const token = localStorage.getItem("authToken")
 
       if (!selectedTimeSlot) {
@@ -126,16 +176,20 @@ const Booking = () => {
         date: selectedDate,
         time: selectedTimeSlot.hour,
         duration: `${service.duration} minutos`,
-        price: service.price,
+        price: discountApplied ? finalPrice : service.price,
+        discountApplied: discountApplied,
+        originalPrice: service.price
       }
 
       const bookingData = {
         serviceId: service.id,
         date: selectedDate,
-        hour: selectedTimeSlot.hour
+        hour: selectedTimeSlot.hour,
+        price: discountApplied ? finalPrice : service.price,
+        discountApplied: discountApplied
       }
 
-      const response = await createBooking(token, bookingData);   
+      const response = await createBooking(token, bookingData)   
       if (response.status !== 200) {
         setError(response.message)
         return
@@ -147,7 +201,7 @@ const Booking = () => {
     } catch (error) {
       setError(error.message)
     } finally {
-      setBookingInProgress(false);
+      setBookingInProgress(false)
     }
   }
   
@@ -158,6 +212,35 @@ const Booking = () => {
     }
   }
 
+  const validateDebitCard = () => {
+    if (!isValidCardNumber(cardNumber)) {
+      setError("El número de tarjeta debe tener 16 dígitos numéricos.");
+      return false;
+    }
+    if (!cardName.trim() || !isOnlyLetters(cardName)) {
+      setError("El nombre del titular solo debe contener letras.");
+      return false;
+    }
+    if (!isValidExpiryDate(expiryDate)) {
+      setError("La fecha debe tener formato MM/YY válido.");
+      return false;
+    }
+    if (!isValidCVV(cvv)) {
+      setError("El CVV debe tener 3 dígitos numéricos.");
+      return false;
+    }
+    return true;
+  };
+  
+
+  const handleDebitCardPayment = () => {
+    if (!validateDebitCard()) {
+      return
+    }
+    
+    setFinalConfirmation(true)
+    setTimeout(() => navigate("/"), 5000)
+  }
 
   const handleConfirmMercadoPago = () => {
     if (!paymentReceipt) {
@@ -230,9 +313,21 @@ const Booking = () => {
                 <span className="booking-detail-label">Profesional:</span>
                 <span className="booking-detail-value">{bookingData.professionalName}</span>
               </div>
+              {discountApplied && (
+                <>
+                  <div className="booking-detail-item">
+                    <span className="booking-detail-label">Precio Original:</span>
+                    <span className="booking-detail-value booking-price-original">${bookingData.originalPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <span className="booking-detail-label">Descuento (15%):</span>
+                    <span className="booking-detail-value booking-price-discount">-${discountAmount.toLocaleString()}</span>
+                  </div>
+                </>
+              )}
               <div className="booking-detail-item">
-                <span className="booking-detail-label">Precio:</span>
-                <span className="booking-detail-value">${typeof bookingData.price === "number" ? bookingData.price.toLocaleString() : "N/A"}</span>
+                <span className="booking-detail-label">Precio Final:</span>
+                <span className="booking-detail-value booking-price-final">${bookingData.price.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -241,7 +336,6 @@ const Booking = () => {
     )
   }
 
-  // Payment Flow: booking is confirmed (details set) but payment not yet completed.
   if (bookingConfirmed && bookingData) {
     return (
       <div className="booking-page">
@@ -273,23 +367,48 @@ const Booking = () => {
                 <span className="booking-detail-label">Profesional:</span>
                 <span className="booking-detail-value">{bookingData.professionalName}</span>
               </div>
+              {discountApplied && (
+                <>
+                  <div className="booking-detail-item">
+                    <span className="booking-detail-label">Precio Original:</span>
+                    <span className="booking-detail-value booking-price-original">${bookingData.originalPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <span className="booking-detail-label">Descuento (15%):</span>
+                    <span className="booking-detail-value booking-price-discount">-${discountAmount.toLocaleString()}</span>
+                  </div>
+                </>
+              )}
               <div className="booking-detail-item">
-                <span className="booking-detail-label">Precio:</span>
-                <span className="booking-detail-value">${typeof bookingData.price === "number" ? bookingData.price.toLocaleString() : "N/A"}</span>
+                <span className="booking-detail-label">Precio Final:</span>
+                <span className="booking-detail-value booking-price-final">${bookingData.price.toLocaleString()}</span>
               </div>
             </div>
 
             <div className="booking-payment-section">
-              {/* If no payment method is selected, show selection buttons */}
               {!selectedPaymentMethod && (
                 <>
                   <h3>Proceder al Pago</h3>
                   <p>Seleccioná tu método de pago.</p>
+                  
+                  {discountApplied && (
+                    <div className="booking-discount-notice">
+                      <span className="discount-icon">🎉</span>
+                      <p>¡Felicitaciones! Has obtenido un 15% de descuento por reservar con más de 48 horas de anticipación.</p>
+                    </div>
+                  )}
+                  
                   <div className="booking-payment-buttons">
+                    <button
+                      onClick={() => setSelectedPaymentMethod("DebitCard")}
+                      className="booking-payment-button"
+                    >
+                      Pagar con Tarjeta de Débito
+                    </button>
                     <button
                       onClick={() => {
                         setSelectedPaymentMethod("MercadoPago")
-                        setTimeLeft(15 * 60) // Reset countdown to 15 minutes
+                        setTimeLeft(15 * 60)
                       }}
                       className="booking-payment-button"
                     >
@@ -305,7 +424,66 @@ const Booking = () => {
                 </>
               )}
 
-              {/* MercadoPago Flow */}
+              {selectedPaymentMethod === "DebitCard" && (
+                <>
+                  <h3>Pagar con Tarjeta de Débito</h3>
+                  <div className="debit-card-form">
+                    <div className="form-group">
+                      <label>Número de Tarjeta</label>
+                      <input 
+                        type="text" 
+                        placeholder="1234 5678 9012 3456" 
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, '').slice(0, 16))}
+                        maxLength={16}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Nombre del Titular</label>
+                      <input 
+                        type="text" 
+                        placeholder="Como aparece en la tarjeta" 
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Fecha de Vencimiento</label>
+                        <input 
+                          type="text" 
+                          placeholder="MM/YY" 
+                          value={expiryDate}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d/]/g, '')
+                            if (value.length <= 5) {
+                              setExpiryDate(value)
+                            }
+                          }}
+                          maxLength={5}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Código de Seguridad</label>
+                        <input 
+                          type="text" 
+                          placeholder="CVV" 
+                          value={cvv}
+                          onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                          maxLength={3}
+                        />
+                      </div>
+                    </div>
+                    
+                    {error && <div className="payment-error">{error}</div>}
+                    
+                    <button onClick={handleDebitCardPayment} className="booking-payment-button">
+                      Pagar 
+                    </button>
+                  </div>
+                </>
+              )}
+
               {selectedPaymentMethod === "MercadoPago" && (
                 <>
                   <h3>Pagar con MercadoPago</h3>
@@ -326,7 +504,6 @@ const Booking = () => {
                 </>
               )}
 
-              {/* Efectivo Flow */}
               {selectedPaymentMethod === "Efectivo" && (
                 <>
                   <h3>Pagar con Efectivo</h3>
@@ -335,6 +512,12 @@ const Booking = () => {
                     de tu cuenta y con 24 horas de anticipación. De lo contrario, se deberá abonar la cantidad total igualmente. Si no abonás el pago,
                     no podrás reservar nuevamente en el spa.
                   </p>
+                  {discountApplied && (
+                    <div className="booking-discount-notice warning">
+                      <span className="discount-icon">⚠️</span>
+                      <p>Al pagar en efectivo, no se aplica el descuento del 15%. El precio a pagar será el precio de lista: ${bookingData.originalPrice.toLocaleString()}</p>
+                    </div>
+                  )}
                   <button onClick={handleConfirmEfectivo} className="booking-payment-button">
                     Aceptar y Confirmar Reserva
                   </button>
@@ -347,10 +530,9 @@ const Booking = () => {
     )
   }
 
-
   return (
     <div className="booking-page">
-      <div className="booking-container"style={{ position: 'relative' }}>
+      <div className="booking-container" style={{ position: 'relative' }}>
         {bookingInProgress && (
           <div className="loader-overlay">
             <div className="loader-box">
@@ -359,13 +541,32 @@ const Booking = () => {
             </div>
           </div>
         )}
-
+        
         {service && (
           <>
             <div className="booking-header">
               <h1>Reservar {service.name}</h1>
               <p className="booking-service-price">Profesional: {service.professional.name}</p>
-              <p className="booking-service-price">Precio: ${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</p>
+              
+              {discountApplied ? (
+                <div className="booking-price-container">
+                  <p className="booking-service-price original">
+                    Precio Original: <span className="price-strikethrough">${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</span>
+                  </p>
+                  <p className="booking-service-discount">
+                    Descuento (15%): -${discountAmount.toLocaleString()}
+                  </p>
+                  <p className="booking-service-price discounted">
+                    Precio Final: ${finalPrice.toLocaleString()} <span className="discount-badge">¡15% OFF!</span>
+                  </p>
+                  <p className="booking-discount-info">
+                    <span className="discount-icon"></span> Descuento aplicado por reservar con más de 48 horas  <br /> de anticipación y pagar con tarjeta de débito.
+                  </p>
+                </div>
+              ) : (
+                <p className="booking-service-price">Precio: ${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</p>
+              )}
+              
               <p className="booking-service-duration">Duración: {service.duration} minutos</p>
             </div>
 
@@ -429,7 +630,17 @@ const Booking = () => {
                 </div>
                 <div className="booking-summary-item">
                   <span className="booking-summary-label">Precio:</span>
-                  <span className="booking-summary-value">${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</span>
+                  {discountApplied ? (
+                    <span className="booking-summary-value">
+                      <span className="price-strikethrough">${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</span>
+                      {" "}
+                      <span className="discounted-price">${finalPrice.toLocaleString()}</span>
+                      {" "}
+                      <span className="discount-badge">¡15% OFF!</span>
+                    </span>
+                  ) : (
+                    <span className="booking-summary-value">${typeof service.price === "number" ? service.price.toLocaleString() : "N/A"}</span>
+                  )}
                 </div>
               </div>
 
@@ -449,4 +660,3 @@ const Booking = () => {
 }
 
 export default Booking
-
