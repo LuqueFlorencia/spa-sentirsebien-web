@@ -467,7 +467,7 @@ const Booking = () => {
                         />
                       </div>
                       <div className="form-group">
-                        <label>CVV</label>Add commentMore actions
+                        <label>CVV</label>
                         <input
                           type="text"
                           maxLength={3}
